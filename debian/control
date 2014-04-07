@@ -10,7 +10,8 @@ Homepage: http://z-push.sourceforge.net/soswp
 
 Package: z-push
 Architecture: all
-Depends: ${misc:Depends}, php5, php5-cli
+Depends: ${misc:Depends}, php5, php5-cli, libapache2-mod-php5, php5-xsl, php5-curl, php5-ldap, php5-imap, php-mail, libawl-php
+Conflicts: sogo-activesync
 Description: an implementation of the ActiveSync protocol
  Z-push is an implementation of the ActiveSync protocol which is used
  'over-the-air' for multi platform ActiveSync devices, including Android,

@@ -16,7 +16,9 @@ set_perms() {
 
 case "$1" in
     configure)
-        set_perms www-data www-data 700 /var/lib/z-push/state
+        set_perms www-data www-data 700 /var/lib/z-push
+        set_perms www-data www-data 700 /var/log/z-push
+        ln -sf /etc/php5/conf.d/imap.ini /etc/php5/apache2/conf.d/20-imap.ini
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
