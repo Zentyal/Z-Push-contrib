@@ -53,6 +53,16 @@
     // Try to set unlimited timeout
     define('SCRIPT_TIMEOUT', 0);
 
+    // Define the include paths
+    ini_set('include_path',
+    BASE_PATH. "include/" . PATH_SEPARATOR .
+    BASE_PATH. PATH_SEPARATOR .
+    ini_get('include_path') . PATH_SEPARATOR .
+    "/usr/share/php/" . PATH_SEPARATOR .
+    "/usr/share/php5/" . PATH_SEPARATOR .
+    "/usr/share/pear/" . PATH_SEPARATOR .
+    "/usr/share/awl/inc");
+
     // When accessing through a proxy, the "X-Forwarded-For" header contains the original remote IP
     define('USE_X_FORWARDED_FOR_HEADER', false);
 
@@ -243,7 +253,7 @@
  *  Backend settings
  */
     // the backend data provider
-    define('BACKEND_PROVIDER', '');
+    define('BACKEND_PROVIDER', 'BackendCombined');
 
 /**********************************************************************************
  *  Search provider settings

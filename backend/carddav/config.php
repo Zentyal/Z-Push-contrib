@@ -46,13 +46,13 @@
 // ************************
 
 // Server protocol: http or https
-define('CARDDAV_PROTOCOL', 'https');
+define('CARDDAV_PROTOCOL', 'http');
 
 // Server name
 define('CARDDAV_SERVER', 'localhost');
 
 // Server port
-define('CARDDAV_PORT', '443');
+define('CARDDAV_PORT', '80');
 
 // Server path to the addressbook, or the principal with the addressbooks
 //  If your user has more than 1 addressbook point it to the principal.
@@ -63,7 +63,7 @@ define('CARDDAV_PORT', '443');
 // %u: replaced with the username
 // %d: replaced with the domain
 //   Add the trailing /
-define('CARDDAV_PATH', '/caldav.php/%u/');
+define('CARDDAV_PATH', '/SOGo/dav/%u/Contacts/');
 
 
 // Server path to the default addressbook
@@ -71,14 +71,14 @@ define('CARDDAV_PATH', '/caldav.php/%u/');
 // %u: replaced with the username
 // %d: replaced with the domain
 //   Add the trailing /
-define('CARDDAV_DEFAULT_PATH', '/caldav.php/%u/addresses/');
+define('CARDDAV_DEFAULT_PATH', '/SOGo/dav/%u/Contacts/personal/');
 
 // Server path to the GAL addressbook. This addressbook is readonly and searchable by the user, but it will NOT be synced.
 // If you don't want GAL, comment it
 // %u: replaced with the username
 // %d: replaced with the domain
 //  Add the trailing /
-define('CARDDAV_GAL_PATH', '/caldav.php/%d/GAL/');
+define('CARDDAV_GAL_PATH', '/SOGo/dav/%u/Contacts/GAL/');
 
 // Minimal length for the search pattern to do the real search.
 define('CARDDAV_GAL_MIN_LENGTH', 5);

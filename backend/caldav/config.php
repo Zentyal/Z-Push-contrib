@@ -45,16 +45,16 @@
 //  BackendCalDAV settings
 // ************************
 // Server address
-define('CALDAV_SERVER', 'http://calendar.domain.com');
+define('CALDAV_SERVER', 'http://localhost');
 
 // Port
 define('CALDAV_PORT', '80');
 
 // Path 
-define('CALDAV_PATH', '/caldav.php/%u/');
+define('CALDAV_PATH', '/SOGo/dav/%u/Calendar/');
 
 // Personal CalDAV folder (calendar folder/principal)
-define('CALDAV_PERSONAL', 'home');
+define('CALDAV_PERSONAL', 'personal');
 
 
 ?>

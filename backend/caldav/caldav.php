@@ -62,6 +62,8 @@ class BackendCalDAV extends BackendDiff {
      * @see IBackend::Logon()
      */
     public function Logon($username, $domain, $password) {
+        $parts = explode('@', $username);
+        $username = $parts[0];
         $this->_username = $username;
         $this->_caldav_path = str_replace('%u', $username, CALDAV_PATH);
         $this->_caldav = new CalDAVClient(CALDAV_SERVER . ":" . CALDAV_PORT . $this->_caldav_path, $username, $password);
