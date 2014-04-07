@@ -1,0 +1,2 @@
+var/lib/z-push/state/ usr/share/z-push/state 
+etc/z-push/config.php usr/share/z-push/config.php

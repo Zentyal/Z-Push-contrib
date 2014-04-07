@@ -1,0 +1,89 @@
+This work was packaged for Debian by:
+
+    Wolfram Quester <wolfi@sigxcpu.org> on Fri, 09 Apr 2010 20:16:37 +0200
+
+It was downloaded from:
+
+    http://z-push.sourceforge.net/soswp/index.php?pages_id=39&t=Download
+
+Upstream Author(s):
+
+    Zarafa Deutschland GmbH
+    http://www.zarafaserver.de/
+
+Copyright:
+
+    Copyright (C) Zarafa Deutschland GmbH
+    http://www.zarafaserver.de/
+
+License:
+
+NOTE: According to sec. 8 of the GNU General Public License (GPL),
+Version 2, the distribution of the Program in or to the 
+United States of America is excluded from the scope of this license. 
+The Program is licensed under GPL Version 2 only.
+
+   This package is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License version 2 as
+   published by the Free Software Foundation.
+
+    This package is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <http://www.gnu.org/licenses/>
+
+On Debian systems, the complete text of the GNU General
+Public License version 2 can be found in "/usr/share/common-licenses/GPL-2".
+
+Two of the files are distributed under different licenses:
+include/mimeDecode.php: This source file is subject to version 2.02 of the PHP
+			license available through the world-wide-web at
+			http://www.php.net/license/2_02.txt
+include/z_RFC822.php is licensed as follows:
+// +-----------------------------------------------------------------------+
+// | Copyright (c) 2001-2002, Richard Heyes                                |
+// | All rights reserved.                                                  |
+// |                                                                       |
+// | Redistribution and use in source and binary forms, with or without    |
+// | modification, are permitted provided that the following conditions    |
+// | are met:                                                              |
+// |                                                                       |
+// | o Redistributions of source code must retain the above copyright      |
+// |   notice, this list of conditions and the following disclaimer.       |
+// | o Redistributions in binary form must reproduce the above copyright   |
+// |   notice, this list of conditions and the following disclaimer in the |
+// |   documentation and/or other materials provided with the distribution.|
+// | o The names of the authors may not be used to endorse or promote      |
+// |   products derived from this software without specific prior written  |
+// |   permission.                                                         |
+// |                                                                       |
+// | THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS   |
+// | "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT     |
+// | LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR |
+// | A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT  |
+// | OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, |
+// | SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT      |
+// | LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, |
+// | DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY |
+// | THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT   |
+// | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE |
+// | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  |
+// |                                                                       |
+// +-----------------------------------------------------------------------+
+// | Authors: Richard Heyes <richard@phpguru.org>                          |
+// |          Chuck Hagenbuch <chuck@horde.org>                            |
+// +-----------------------------------------------------------------------+
+
+
+The Debian packaging is:
+
+    Copyright (C) 2010 Wolfram Quester <wolfi@sigxcpu.org>
+
+you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+

@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE=1
+
+%:
+	dh  $@
+
+override_dh_install:
+	dh_install -X debian -X LICENSE
+	mkdir -p debian/z-push/var/lib/z-push/state/
+	mkdir -p debian/z-push/etc/apache2/sites-available/
+	cp debian/z-push.alias debian/z-push/etc/apache2/sites-available/z-push
+

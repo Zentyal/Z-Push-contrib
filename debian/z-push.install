@@ -1,0 +1,16 @@
+config.php         /etc/z-push/
+backend            /usr/share/z-push/
+compat.php         /usr/share/z-push/
+debug.php          /usr/share/z-push/
+include            /usr/share/z-push/
+index.php          /usr/share/z-push/
+memimporter.php    /usr/share/z-push/
+proto.php          /usr/share/z-push/
+request.php        /usr/share/z-push/
+statemachine.php   /usr/share/z-push/
+streamer.php       /usr/share/z-push/
+streamimporter.php /usr/share/z-push/
+version.php        /usr/share/z-push/
+wbxml.php          /usr/share/z-push/
+zpushdefs.php      /usr/share/z-push/
+zpushdtd.php       /usr/share/z-push/

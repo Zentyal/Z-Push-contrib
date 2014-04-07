@@ -1,0 +1,33 @@
+#!/bin/sh
+
+set -e
+
+set_perms() {
+    USER=$1
+    GROUP=$2
+    MODE=$3
+    FILE=$4
+    if ! dpkg-statoverride --list $FILE > /dev/null 2>&1; then
+        chown $USER:$GROUP $FILE
+        chmod $MODE $FILE
+    fi
+}
+
+
+case "$1" in
+    configure)
+        set_perms www-data www-data 700 /var/lib/z-push/state
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

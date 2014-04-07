@@ -1,0 +1,18 @@
+Source: z-push
+Section: web
+Priority: extra
+Maintainer: Wolfram Quester <wolfi@sigxcpu.org>
+Build-Depends: debhelper (>= 7.0.50)
+Standards-Version: 3.9.1
+Homepage: http://z-push.sourceforge.net/soswp
+#Vcs-Git: git://git.debian.org/collab-maint/z-push.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/z-push.git;a=summary
+
+Package: z-push
+Architecture: all
+Depends: ${misc:Depends}, php5, php5-cli
+Description: an implementation of the ActiveSync protocol
+ Z-push is an implementation of the ActiveSync protocol which is used
+ 'over-the-air' for multi platform ActiveSync devices, including Android,
+ Windows Mobile, iPhone, Sony Ericsson and Nokia mobile devices. With
+ Z-push any groupware can be connected and synced with these devices.
