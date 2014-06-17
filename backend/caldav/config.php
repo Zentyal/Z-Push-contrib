@@ -44,6 +44,7 @@
 // ************************
 //  BackendCalDAV settings
 // ************************
+
 // Server address
 define('CALDAV_SERVER', 'http://localhost');
 
@@ -55,6 +56,11 @@ define('CALDAV_PATH', '/SOGo/dav/%u/Calendar/');
 
 // Personal CalDAV folder (calendar folder/principal)
 define('CALDAV_PERSONAL', 'personal');
+
+// If the CalDAV server supports the sync-collection operation
+// DAViCal and SOGo support it
+// Setting this to false will work with most servers, but it will be slower
+define('CALDAV_SUPPORTS_SYNC', false);
 
 
 ?>

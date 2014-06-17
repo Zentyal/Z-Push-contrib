@@ -57,6 +57,25 @@ class BackendCalDAV extends BackendDiff {
     private $_collection = array();
     private $_username;
 
+    private $changessinkinit;
+    private $sinkdata;
+    private $sinkmax;
+
+
+    /**
+     * Constructor
+     *
+     */
+    public function BackendCalDAV() {
+        if (!function_exists("curl_init")) {
+            throw new FatalException("BackendCalDAV(): php-curl is not found", 0, null, LOGLEVEL_FATAL);
+        }
+
+        $this->changessinkinit = false;
+        $this->sinkdata = array();
+        $this->sinkmax = array();
+    }
+
     /**
      * Login to the CalDAV backend
      * @see IBackend::Logon()
@@ -83,6 +102,14 @@ class BackendCalDAV extends BackendDiff {
      * @see IBackend::Logoff()
      */
     public function Logoff() {
+        ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendCalDAV->Logoff()"));
+        $this->_caldav = null;
+
+        $this->SaveStorages();
+
+        unset($this->sinkdata);
+        unset($this->sinkmax);
+
         return true;
     }
 
@@ -145,7 +172,7 @@ class BackendCalDAV extends BackendDiff {
         $folder->displayname = $val->displayname;
         $folder->serverid = $id;
         if ($id[0] == "C") {
-            if (defined(CALDAV_PERSONAL) && strtolower(substr($id, 1) == CALDAV_PERSONAL)) {
+            if (defined('CALDAV_PERSONAL') && strtolower(substr($id, 1)) == CALDAV_PERSONAL) {
                 $folder->type = SYNC_FOLDER_TYPE_USER_APPOINTMENT;
             }
             else {
@@ -153,7 +180,7 @@ class BackendCalDAV extends BackendDiff {
             }
         }
         else {
-            if (defined(CALDAV_PERSONAL) && strtolower(substr($id, 1) == CALDAV_PERSONAL)) {
+            if (defined('CALDAV_PERSONAL') && strtolower(substr($id, 1)) == CALDAV_PERSONAL) {
                 $folder->type = SYNC_FOLDER_TYPE_USER_TASK;
             }
             else {
@@ -272,8 +299,7 @@ class BackendCalDAV extends BackendDiff {
      * Change/Add a message with contents received from ActiveSync
      * @see BackendDiff::ChangeMessage()
      */
-    public function ChangeMessage($folderid, $id, $message, $contentParameters)
-    {
+    public function ChangeMessage($folderid, $id, $message, $contentParameters) {
         ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendCalDAV->ChangeMessage('%s','%s')", $folderid,  $id));
 
         if ($id) {
@@ -357,6 +383,127 @@ class BackendCalDAV extends BackendDiff {
     }
 
     /**
+     * Indicates if the backend has a ChangesSink.
+     * A sink is an active notification mechanism which does not need polling.
+     * The CalDAV backend simulates a sink by polling revision dates from the events or use the native sync-collection.
+     *
+     * @access public
+     * @return boolean
+     */
+    public function HasChangesSink() {
+        return true;
+    }
+
+    /**
+     * The folder should be considered by the sink.
+     * Folders which were not initialized should not result in a notification
+     * of IBackend->ChangesSink().
+     *
+     * @param string        $folderid
+     *
+     * @access public
+     * @return boolean      false if found can not be found
+     */
+    public function ChangesSinkInitialize($folderid) {
+        ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendCalDAV->ChangesSinkInitialize(): folderid '%s'", $folderid));
+
+        // We don't need the actual events, we only need to get the changes since this moment
+        $init_ok = true;
+        $url = $this->_caldav_path . substr($folderid, 1) . "/";
+        $this->sinkdata[$folderid] = $this->_caldav->GetSync($url, true, CALDAV_SUPPORTS_SYNC);
+        if (CALDAV_SUPPORTS_SYNC) {
+            // we don't need to store the sinkdata if the caldav server supports native sync
+            unset($this->sinkdata[$url]);
+            $this->sinkdata[$folderid] = array();
+        }
+
+        $this->changessinkinit = $init_ok;
+        $this->sinkmax = array();
+
+        return $this->changessinkinit;
+    }
+
+    /**
+     * The actual ChangesSink.
+     * For max. the $timeout value this method should block and if no changes
+     * are available return an empty array.
+     * If changes are available a list of folderids is expected.
+     *
+     * @param int           $timeout        max. amount of seconds to block
+     *
+     * @access public
+     * @return array
+     */
+    public function ChangesSink($timeout = 30) {
+        $notifications = array();
+        $stopat = time() + $timeout - 1;
+
+        //We can get here and the ChangesSink not be initialized yet
+        if (!$this->changessinkinit) {
+            ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendCalDAV->ChangesSink - Not initialized ChangesSink, sleep and exit"));
+            // We sleep and do nothing else
+            sleep($timeout);
+            return $notifications;
+        }
+
+        while($stopat > time() && empty($notifications)) {
+
+            foreach ($this->sinkdata as $k => $v) {
+                $changed = false;
+
+                $url = $this->_caldav_path . substr($k, 1) . "/";
+                $response = $this->_caldav->GetSync($url, false, CALDAV_SUPPORTS_SYNC);
+
+                if (CALDAV_SUPPORTS_SYNC) {
+                    if (count($response) > 0) {
+                        $changed = true;
+                        ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendCalDAV->ChangesSink - Changes detected"));
+                    }
+                }
+                else {
+                    // If the numbers of events are different, we know for sure, there are changes
+                    if (count($response) != count($v)) {
+                        $changed = true;
+                        ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendCalDAV->ChangesSink - Changes detected"));
+                    }
+                    else {
+                        // If the numbers of events are equals, we compare the biggest date
+                        // FIXME: we are comparing strings no dates
+                        if (!isset($this->sinkmax[$k])) {
+                            $this->sinkmax[$k] = '';
+                            for ($i = 0; $i < count($v); $i++) {
+                                if ($v[$i]['getlastmodified'] > $this->sinkmax[$k]) {
+                                    $this->sinkmax[$k] = $v[$i]['getlastmodified'];
+                                }
+                            }
+                        }
+
+                        for ($i = 0; $i < count($response); $i++) {
+                            if ($response[$i]['getlastmodified'] > $this->sinkmax[$k]) {
+                                $changed = true;
+                            }
+                        }
+
+                        if ($changed) {
+                            ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendCalDAV->ChangesSink - Changes detected"));
+                        }
+                    }
+                }
+
+                if ($changed) {
+                    $notifications[] = $k;
+                }
+            }
+
+            if (empty($notifications))
+                sleep(5);
+        }
+
+        return $notifications;
+    }
+
+
+    /**
      * Convert a iCAL VEvent to ActiveSync format
      * @param ical_vevent $data
      * @param ContentParameters $contentparameters
@@ -371,7 +518,7 @@ class BackendCalDAV extends BackendDiff {
         $timezones = $ical->GetComponents("VTIMEZONE");
         $timezone = "";
         if (count($timezones) > 0) {
-            $timezone = $this->_ParseTimezone($timezones[0]->GetPValue("TZID"));
+            $timezone = Utils::ParseTimezone($timezones[0]->GetPValue("TZID"));
         }
         if (!$timezone) {
             $timezone = date_default_timezone_get();
@@ -384,11 +531,11 @@ class BackendCalDAV extends BackendDiff {
             if (count($rec) > 0) {
                 $recurrence_id = reset($rec);
                 $exception = new SyncAppointmentException();
-                $tzid = $this->_ParseTimezone($recurrence_id->GetParameterValue("TZID"));
+                $tzid = Utils::ParseTimezone($recurrence_id->GetParameterValue("TZID"));
                 if (!$tzid) {
                     $tzid = $timezone;
                 }
-                $exception->exceptionstarttime = $this->_MakeUTCDate($recurrence_id->Value(), $tzid);
+                $exception->exceptionstarttime = Utils::MakeUTCDate($recurrence_id->Value(), $tzid);
                 $exception->deleted = "0";
                 $exception = $this->_ParseVEventToSyncObject($event, $exception, $truncsize);
                 if (!isset($message->exceptions)) {
@@ -417,11 +564,11 @@ class BackendCalDAV extends BackendDiff {
         foreach ($properties as $property) {
             switch ($property->Name()) {
                 case "LAST-MODIFIED":
-                    $message->dtstamp = $this->_MakeUTCDate($property->Value());
+                    $message->dtstamp = Utils::MakeUTCDate($property->Value());
                     break;
 
                 case "DTSTART":
-                    $message->starttime = $this->_MakeUTCDate($property->Value(), $this->_ParseTimezone($property->GetParameterValue("TZID")));
+                    $message->starttime = Utils::MakeUTCDate($property->Value(), Utils::ParseTimezone($property->GetParameterValue("TZID")));
                     if (strlen($property->Value()) == 8) {
                         $message->alldayevent = "1";
                     }
@@ -449,7 +596,7 @@ class BackendCalDAV extends BackendDiff {
                     break;
 
                 case "DTEND":
-                    $message->endtime = $this->_MakeUTCDate($property->Value(), $this->_ParseTimezone($property->GetParameterValue("TZID")));
+                    $message->endtime = Utils::MakeUTCDate($property->Value(), Utils::ParseTimezone($property->GetParameterValue("TZID")));
                     if (strlen($property->Value()) == 8) {
                         $message->alldayevent = "1";
                     }
@@ -493,16 +640,27 @@ class BackendCalDAV extends BackendDiff {
                     }
                     break;
 
+                // SYNC_POOMCAL_MEETINGSTATUS
+                // Meetingstatus values
+                //  0 = is not a meeting
+                //  1 = is a meeting
+                //  3 = Meeting received
+                //  5 = Meeting is canceled
+                //  7 = Meeting is canceled and received
+                //  9 = as 1
+                // 11 = as 3
+                // 13 = as 5
+                // 15 = as 7
                 case "STATUS":
                     switch ($property->Value()) {
                         case "TENTATIVE":
-                            $message->meetingstatus = "1";
+                            $message->meetingstatus = "3"; // was 1
                             break;
                         case "CONFIRMED":
-                            $message->meetingstatus = "3";
+                            $message->meetingstatus = "1"; // was 3
                             break;
                         case "CANCELLED":
-                            $message->meetingstatus = "5";
+                            $message->meetingstatus = "5"; // could also be 7
                             break;
                     }
                     break;
@@ -560,7 +718,7 @@ class BackendCalDAV extends BackendDiff {
                 case "EXDATE":
                     $exception = new SyncAppointmentException();
                     $exception->deleted = "1";
-                    $exception->exceptionstarttime = $this->_MakeUTCDate($property->Value());
+                    $exception->exceptionstarttime = Utils::MakeUTCDate($property->Value());
                     if (!isset($message->exceptions)) {
                         $message->exceptions = array();
                     }
@@ -590,7 +748,7 @@ class BackendCalDAV extends BackendDiff {
                 if ($property->Name() == "TRIGGER") {
                     $parameters = $property->Parameters();
                     if (array_key_exists("VALUE", $parameters) && $parameters["VALUE"] == "DATE-TIME") {
-                        $trigger = date_create("@" . $this->_MakeUTCDate($property->Value()));
+                        $trigger = date_create("@" . Utils::MakeUTCDate($property->Value()));
                         $begin = date_create("@" . $message->starttime);
                         $interval = date_diff($begin, $trigger);
                         $message->reminder = $interval->format("%i") + $interval->format("%h") * 60 + $interval->format("%a") * 60 * 24;
@@ -637,7 +795,7 @@ class BackendCalDAV extends BackendDiff {
                     break;
 
                 case "UNTIL":
-                    $recurrence->until = $this->_MakeUTCDate($rule[1]);
+                    $recurrence->until = Utils::MakeUTCDate($rule[1]);
                     break;
 
                 case "COUNT":
@@ -1041,11 +1199,11 @@ class BackendCalDAV extends BackendDiff {
                     break;
 
                 case "COMPLETED":
-                    $message->datecompleted = $this->_MakeUTCDate($property->Value());
+                    $message->datecompleted = Utils::MakeUTCDate($property->Value());
                     break;
 
                 case "DUE":
-                    $message->utcduedate = $this->_MakeUTCDate($property->Value());
+                    $message->utcduedate = Utils::MakeUTCDate($property->Value());
                     break;
 
                 case "PRIORITY":
@@ -1077,7 +1235,7 @@ class BackendCalDAV extends BackendDiff {
                     break;
 
                 case "DTSTART":
-                    $message->utcstartdate = $this->_MakeUTCDate($property->Value());
+                    $message->utcstartdate = Utils::MakeUTCDate($property->Value());
                     break;
 
                 case "SUMMARY":
@@ -1102,7 +1260,7 @@ class BackendCalDAV extends BackendDiff {
                 if ($property->Name() == "TRIGGER") {
                     $parameters = $property->Parameters();
                     if (array_key_exists("VALUE", $parameters) && $parameters["VALUE"] == "DATE-TIME") {
-                        $message->remindertime = $this->_MakeUTCDate($property->Value());
+                        $message->remindertime = Utils::MakeUTCDate($property->Value());
                         $message->reminderset = "1";
                     }
                     elseif (!array_key_exists("VALUE", $parameters) || $parameters["VALUE"] == "DURATION") {
@@ -1213,59 +1371,11 @@ class BackendCalDAV extends BackendDiff {
         return $vtodo;
     }
 
-    /**
-     * Generate date object from string and timezone.
-     * @param string $value
-     * @param string $timezone
-     */
-    private function _MakeUTCDate($value, $timezone = null) {
-        $tz = null;
-        if ($timezone) {
-            $tz = timezone_open($timezone);
-        }
-        if (!$tz) {
-            //If there is no timezone set, we use the default timezone
-            $tz = timezone_open(date_default_timezone_get());
-        }
-        //20110930T090000Z
-        $date = date_create_from_format('Ymd\THis\Z', $value, timezone_open("UTC"));
-        if (!$date) {
-            //20110930T090000
-            $date = date_create_from_format('Ymd\THis', $value, $tz);
-        }
-        if (!$date) {
-            //20110930 (Append T000000Z to the date, so it starts at midnight)
-            $date = date_create_from_format('Ymd\THis\Z', $value . "T000000Z", $tz);
-        }
-        return date_timestamp_get($date);
-    }
-
     private function _GetDateFromUTC($format, $date, $tz_str) {
         $timezone = $this->_GetTimezoneFromString($tz_str);
         $dt = date_create('@' . $date);
         date_timezone_set($dt, timezone_open($timezone));
         return date_format($dt, $format);
-    }
-
-    /**
-     * Generate a tzid from various formats
-     * @param str $timezone
-     * @return timezone id
-     */
-    private function _ParseTimezone($timezone) {
-        //(GMT+01.00) Amsterdam / Berlin / Bern / Rome / Stockholm / Vienna
-        if (preg_match('/GMT(\\+|\\-)0(\d)/', $timezone, $matches)) {
-            return "Etc/GMT" . $matches[1] . $matches[2];
-        }
-        //(GMT+10.00) XXX / XXX / XXX / XXX
-        if (preg_match('/GMT(\\+|\\-)1(\d)/', $timezone, $matches)) {
-            return "Etc/GMT" . $matches[1] . "1" . $matches[2];
-        }
-        ///inverse.ca/20101018_1/Europe/Amsterdam or /inverse.ca/20101018_1/America/Argentina/Buenos_Aires
-        if (preg_match('/\/[.[:word:]]+\/\w+\/(\w+)\/([\w\/]+)/', $timezone, $matches)) {
-            return $matches[1] . "/" . $matches[2];
-        }
-        return trim($timezone, '"');
     }
 
     //This returns a timezone that matches the timezonestring.
