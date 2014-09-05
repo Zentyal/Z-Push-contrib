@@ -79,6 +79,7 @@ define('IMAP_FROM_SQL_OPTIONS', serialize(array(PDO::ATTR_PERSISTENT => true)));
 define('IMAP_FROM_SQL_QUERY', "select first_name, last_name, mail_address from users where mail_address = '#username@#domain'");
 define('IMAP_FROM_SQL_FIELDS', serialize(array('first_name', 'last_name', 'mail_address')));
 define('IMAP_FROM_SQL_FROM', '#first_name #last_name <#mail_address>');
+define('IMAP_FROM_SQL_FULLNAME', '#first_name #last_name');
 
 // SERVER: ldap server
 // SERVER_PORT: ldap port
@@ -95,6 +96,7 @@ define('IMAP_FROM_LDAP_BASE', 'dc=zpush,dc=org');
 define('IMAP_FROM_LDAP_QUERY', '(mail=#username@#domain)');
 define('IMAP_FROM_LDAP_FIELDS', serialize(array('givenname', 'sn', 'mail')));
 define('IMAP_FROM_LDAP_FROM', '#givenname #sn <#mail>');
+define('IMAP_FROM_LDAP_FULLNAME', '#givenname #sn');
 
 
 // copy outgoing mail to this folder. If not set z-push will try the default folders
@@ -141,11 +143,5 @@ $imap_smtp_params = array();
 // If you are using IMAP_SMTP_METHOD = mail or sendmail and your sent messages are not correctly displayed you can change this to "\n".
 //   BUT, it doesn't with RFC 2822 and will break if using smp method
 define('MAIL_MIMEPART_CRLF', "\r\n");
-
-
-// convert messages content with mb_string functions
-// options: false -> Don't convert at all
-//          string -> Encoding preferences, example: "UTF-16, UTF-8, ISO-8859-15, ISO-8859-1, Windows-1252"
-define('IMAP_MBCONVERT', false);
 
 ?>
