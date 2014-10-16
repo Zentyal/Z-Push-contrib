@@ -120,6 +120,7 @@ class BackendCardDAV extends BackendDiff implements ISearchProvider {
             //TODO: CardDAV Logon operation will always succeed as we are also checking IMAP and CalDAV
             // We are handling those cases where a user has: username and  not-username@domain.lan
             $this->server = null;
+            ZLog::Write(LOGLEVEL_WARN, sprintf("BackendCardDAV->Logon(): User '%s' failed to authenticate on '%s': %s. Bypassing this check.", $username, $this->url, $error));
             return 1;
 
             //TODO: get error message
