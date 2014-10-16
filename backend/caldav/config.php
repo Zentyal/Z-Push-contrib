@@ -58,7 +58,8 @@ define('CALDAV_PATH', '/SOGo/dav/%u/Calendar/');
 define('CALDAV_PERSONAL', 'personal');
 
 // If the CalDAV server supports the sync-collection operation
-// DAViCal, SOGo and Sabredav support it
+// DAViCal, SOGo and SabreDav support it
+// SabreDav version must be at least 1.9.0, otherwise set this to false
 // Setting this to false will work with most servers, but it will be slower
 define('CALDAV_SUPPORTS_SYNC', false);
 
