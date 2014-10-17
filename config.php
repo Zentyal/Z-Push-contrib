@@ -78,7 +78,7 @@
      * false - use the username only (default).
      * true - use the complete email address.
      */
-    define('USE_FULLEMAIL_FOR_LOGIN', false);
+    define('USE_FULLEMAIL_FOR_LOGIN', true);
 
 /**********************************************************************************
  * Device pre-authorization. Useful when using Z-Push as a standalone product.

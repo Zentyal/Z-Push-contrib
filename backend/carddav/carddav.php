@@ -95,6 +95,8 @@ class BackendCardDAV extends BackendDiff implements ISearchProvider {
      * @return boolean
      */
     public function Logon($username, $domain, $password) {
+        $parts = explode('@', $username);
+        $username = $parts[0];
         $this->url = CARDDAV_PROTOCOL . '://' . CARDDAV_SERVER . ':' . CARDDAV_PORT . str_replace("%d", $domain, str_replace("%u", $username, CARDDAV_PATH));
         $this->default_url = CARDDAV_PROTOCOL . '://' . CARDDAV_SERVER . ':' . CARDDAV_PORT . str_replace("%d", $domain, str_replace("%u", $username, CARDDAV_DEFAULT_PATH));
         if (defined('CARDDAV_GAL_PATH')) {
@@ -115,6 +117,12 @@ class BackendCardDAV extends BackendDiff implements ISearchProvider {
             $this->discoverAddressbooks();
         }
         else {
+            //TODO: CardDAV Logon operation will always succeed as we are also checking IMAP and CalDAV
+            // We are handling those cases where a user has: username and  not-username@domain.lan
+            $this->server = null;
+            ZLog::Write(LOGLEVEL_WARN, sprintf("BackendCardDAV->Logon(): User '%s' failed to authenticate on '%s': %s. Bypassing this check.", $username, $this->url, $error));
+            return 1;
+
             //TODO: get error message
             $error = '';
             ZLog::Write(LOGLEVEL_ERROR, sprintf("BackendCardDAV->Logon(): User '%s' failed to authenticate on '%s': %s", $username, $this->url, $error));
