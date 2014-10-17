@@ -21,7 +21,7 @@ case "$1" in
         ln -sf /etc/php5/mods-available/imap.ini /etc/php5/apache2/conf.d/20-imap.ini
         ln -sf /etc/php5/mods-available/imap.ini /etc/php5/cli/conf.d/20-imap.ini
 
-        service zentyal webserver restart || true
+        service apache2 restart || true
 
         # Display License Agreement only in the first install
         if [ -z "$2" ]
