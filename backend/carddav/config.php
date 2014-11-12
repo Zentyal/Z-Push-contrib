@@ -46,13 +46,13 @@
 // ************************
 
 // Server protocol: http or https
-define('CARDDAV_PROTOCOL', 'http');
+define('CARDDAV_PROTOCOL', 'https');
 
 // Server name
 define('CARDDAV_SERVER', 'localhost');
 
 // Server port
-define('CARDDAV_PORT', '80');
+define('CARDDAV_PORT', '443');
 
 // Server path to the addressbook, or the principal with the addressbooks
 //  If your user has more than 1 addressbook point it to the principal.

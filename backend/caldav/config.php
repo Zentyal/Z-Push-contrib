@@ -46,10 +46,10 @@
 // ************************
 
 // Server address
-define('CALDAV_SERVER', 'http://localhost');
+define('CALDAV_SERVER', 'https://localhost');
 
 // Port
-define('CALDAV_PORT', '80');
+define('CALDAV_PORT', '443');
 
 // Path 
 define('CALDAV_PATH', '/SOGo/dav/%u/Calendar/');
