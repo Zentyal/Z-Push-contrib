@@ -11,4 +11,4 @@ override_dh_install:
 	mkdir -p debian/z-push/var/log/z-push
 	mkdir -p debian/z-push/etc/apache2/conf-available/
 	cp debian/zentyal-activesync.conf debian/z-push/etc/apache2/conf-available/
-
+	dh_installlogrotate
